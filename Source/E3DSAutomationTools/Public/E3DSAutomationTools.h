@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "E3DSAutomationToolsSettingsDetails.h"
 #include "Modules/ModuleManager.h"
 
 class FToolBarBuilder;
@@ -17,6 +18,7 @@ public:
 	virtual void ShutdownModule() override;
 	int CheckForErrors();
 	void ShowErrorMessage(FString Message);
+	static void OpenURL(FString &Url);
 	
 	/** This function will be bound to Command. */
 	void PluginButtonClicked();
@@ -28,4 +30,6 @@ private:
 
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
+
+	bool Find7Z();
 };

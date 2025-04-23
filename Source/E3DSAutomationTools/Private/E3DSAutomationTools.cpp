@@ -6,6 +6,9 @@
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
 #include "ISettingsModule.h"
+#include "E3DSAutomationToolsSettingsDetails.h"
+#include <windows.h>
+#include <shellapi.h>
 #include "E3dsAutomationToolsSettings.h"
 
 static const FName E3DSAutomationToolsTabName("E3DSAutomationTools");
@@ -33,6 +36,9 @@ void FE3DSAutomationToolsModule::StartupModule()
 			LOCTEXT("RuntimeSettingsName", "E3DS Automation Tools Settings"), LOCTEXT("RuntimeSettingsDescription", "Configure E3DS Automation Tools Settings"),
 			GetMutableDefault<UE3dsAutomationToolsSettings>());
 	}
+	FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	PropertyModule.RegisterCustomClassLayout(UE3dsAutomationToolsSettings::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FE3DSAutomationToolsSettingsDetails::MakeInstance));
+
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FE3DSAutomationToolsModule::RegisterMenus));
 }
 
@@ -88,8 +94,8 @@ void FE3DSAutomationToolsModule::PluginButtonClicked()
 
 		
 
-		cmdParams.Append(" --TestUrl=");
-		cmdParams.Append(Plugin_Settings->TestUrl);
+		//cmdParams.Append(" --TestUrl=");
+		//cmdParams.Append(Plugin_Settings->TestUrl);
 
 		cmdParams.Append(" --UProjectPath=");
 		//cmdParams.Append(Plugin_Settings->UprojectPath);
@@ -136,9 +142,11 @@ void FE3DSAutomationToolsModule::PluginButtonClicked()
 		else {
 			cmdParams.Append("false");
 		}
+		cmdParams.Append(" --UEVersion=");
+		cmdParams.Append(FEngineVersion::Current().ToString());
 
-
-
+		cmdParams.Append(" --AutoLaunchStreamingAppURLOnCompletion=");
+		cmdParams.Append((Plugin_Settings->AutoLaunchStreamingAppURLOnCompletion)?"true":"false");
 		// Get the path to the .uplugin file of your plugin
 		//FString PluginFilePath = MyPluginModule->GetPluginFilePath();
 
@@ -254,6 +262,13 @@ int FE3DSAutomationToolsModule::CheckForErrors() {
 		ErrorMessage.Append("7Zip.exe file path is empty\n");
 		bHasError = true;
 	}
+	/*else if (FPlatformFileManager::Get().GetPlatformFile().FileExists(*Plugin_Settings->PathTo7Zip.FilePath)==false)// if the 7z.exe doesnt exist in the specified path
+	{
+		if (Find7Z() == false) {
+			ErrorMessage.Append("7Zip.exe could not be found\n");
+			bHasError = true;
+		}
+	}*/
 	if (Plugin_Settings->ApiKey.IsEmpty()) {
 		ErrorMessage.Append("API key is empty\n");
 		bHasError = true;
@@ -262,10 +277,10 @@ int FE3DSAutomationToolsModule::CheckForErrors() {
 		ErrorMessage.Append("App name is empty\n");
 		bHasError = true;
 	}
-	if (Plugin_Settings->PackagingFolder.Path.IsEmpty()) {
-		ErrorMessage.Append("Packaging folder path is empty\n");
-		bHasError = true;
-	}
+	// if (Plugin_Settings->PackagingFolder.Path.IsEmpty()) {
+		// ErrorMessage.Append("Packaging folder path is empty\n");
+		// bHasError = true;
+	// }
 	if (Plugin_Settings->DoDedicatedServerBuild) {
 		if (Plugin_Settings->E3DSDedicatedServerAppName.IsEmpty())
 		{
@@ -280,12 +295,40 @@ int FE3DSAutomationToolsModule::CheckForErrors() {
 	}
 	return 0;
 }
+// returns true if 7Z could be found
+bool FE3DSAutomationToolsModule::Find7Z() {
+	const FString Default7ZipPath = TEXT("C:/Program Files/7-Zip/7z.exe");
+	
+	if (FPlatformFileManager::Get().GetPlatformFile().FileExists(*Default7ZipPath))// try to find 7z.exe in default location
+	{
+		UE3dsAutomationToolsSettings* Plugin_Settings = GetMutableDefault<UE3dsAutomationToolsSettings>();
+		Plugin_Settings->PathTo7Zip.FilePath = Default7ZipPath;// first fix the parameter in UE 
+		const FString ConfigFilePath = FPaths::ProjectConfigDir() / TEXT("DefaultE3DSAutomationToolsSettings.ini");
+		const FString SectionName = TEXT("/Script/E3DSAutomationTools.E3DSAutomationToolsSettings");
+		GConfig->SetString(*SectionName, TEXT("PathTo7Zip"), *Default7ZipPath, ConfigFilePath);//then fix the config file
+		GConfig->Flush(false, ConfigFilePath);//saves config file with new data
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 void FE3DSAutomationToolsModule::ShowErrorMessage(FString Message) {
 FText DialogText = FText::Format(
 	LOCTEXT("Error in Settings", "could not run E3DS Automation Tool:\n {0}"),
 	FText::FromString(Message)
 );
 FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+}
+
+void FE3DSAutomationToolsModule::OpenURL(FString &Url) {
+	// Convert FString to a wide string (LPCWSTR)
+	const wchar_t* WideUrl = *Url;
+
+	// Pass the converted URL to ShellExecute
+	ShellExecute(0, 0, WideUrl, 0, 0, SW_SHOW);
+	
+
 }
 #undef LOCTEXT_NAMESPACE
 	

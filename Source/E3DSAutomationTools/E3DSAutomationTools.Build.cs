@@ -43,6 +43,7 @@ public class E3DSAutomationTools : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				//"PixelStreaming",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
