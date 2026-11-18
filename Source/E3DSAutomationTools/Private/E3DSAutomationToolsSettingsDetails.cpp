@@ -21,7 +21,9 @@ void FE3DSAutomationToolsSettingsDetails::CustomizeDetails(IDetailLayoutBuilder&
 	check(ObjectsBeingCustomized.Num() == 1);
 	TWeakObjectPtr<UE3dsAutomationToolsSettings> Settings = Cast<UE3dsAutomationToolsSettings>(ObjectsBeingCustomized[0].Get());
 	IDetailCategoryBuilder& OpenUrlCategory = DetailBuilder.EditCategory("Utilities");//this is the one which  will be showed up  if no translation selected
-	OpenUrlCategory.AddCustomRow(LOCTEXT("Utilities", "Utilities"))
+	// The filter text is what the settings search box matches; with only "Utilities" the three buttons vanished as soon as
+	// anything else was typed (e.g. "API key").
+	OpenUrlCategory.AddCustomRow(LOCTEXT("Utilities", "Utilities E3DS API Key Download Executable Documentation"))
 		.ValueContent()
 		[
 			SNew(SHorizontalBox)
@@ -61,7 +63,7 @@ void FE3DSAutomationToolsSettingsDetails::CustomizeDetails(IDetailLayoutBuilder&
 					.ToolTipText(LOCTEXT("GetE3DSApiKey_Tooltip", "Get E3DS Api Key"))
 					.OnClicked_Lambda([this, Settings]()
 						{
-							FString URL = "https://newcontrolpanel.eagle3dstreaming.com/developer-section";
+							FString URL = "https://controlpanel.eagle3dstreaming.com/developer-section";
 							FE3DSAutomationToolsModule::OpenURL(URL);
 							return(FReply::Handled());
 						})

@@ -239,11 +239,13 @@ int FE3DSAutomationToolsModule::CheckForErrors() {
 
 	}
 	FModuleManager& ModuleManager = FModuleManager::Get();
-	if (ModuleManager.IsModuleLoaded("PixelStreaming")) {
+	// Pixel Streaming 2 (UE 5.5+) is a separate plugin whose module is "PixelStreaming2". On older engines that module
+	// never exists, so IsModuleLoaded just returns false there - no engine-version #if needed.
+	if (ModuleManager.IsModuleLoaded("PixelStreaming") || ModuleManager.IsModuleLoaded("PixelStreaming2")) {
 		
 	}
 	else {
-		ErrorMessage.Append("Pixel Streaming plugin is not enabled\n");
+		ErrorMessage.Append("Pixel Streaming plugin is not enabled (enable Pixel Streaming or Pixel Streaming 2)\n");
 		bHasError = true;
 	}
 	if (Plugin_Settings->EngineFolderPath.IsEmpty()) {
