@@ -39,7 +39,8 @@ public:
 
 	FString GetEnumAsString(EPackagingModes EnumValue)
 	{
-		const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("EPackagingModes"), true);
+		// ANY_PACKAGE was removed in UE 5.7 (deprecated since 5.1). StaticEnum<> needs no name lookup and works on UE4 and every UE5.
+		const UEnum* EnumPtr = StaticEnum<EPackagingModes>();
 		if (!EnumPtr)
 		{
 			// Handle error, enum not found

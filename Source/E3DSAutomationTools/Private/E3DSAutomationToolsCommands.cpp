@@ -6,7 +6,7 @@
 
 void FE3DSAutomationToolsCommands::RegisterCommands()
 {
-	UI_COMMAND(PluginAction, "E3DS-Push To Cloud", "Launch E3DS Automation Tool to push to cloud", EUserInterfaceActionType::Button, FInputGesture());
+	UI_COMMAND(PluginAction, "E3DS-Push To Cloud", "Launch E3DS Automation Tool to push to cloud", EUserInterfaceActionType::Button, FInputChord());
 }
 
 #undef LOCTEXT_NAMESPACE
